@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Bookings Dashboard | LV Tour &amp; Travels</title>
+<style>
+:root{--brown:#6b3f1d;--brown-d:#4a2a12;--gold:#d99a3d;--cream:#fbf6ef;--ink:#2b2118;--muted:#7a6a5b}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--cream);color:var(--ink)}
+header{background:var(--brown-d);color:#fff;padding:16px 4%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header h1{margin:0;font-size:1.3rem}header small{color:var(--gold);display:block;letter-spacing:2px;font-size:11px}
+.w{max-width:1200px;margin:auto;padding:24px 4%}
+.box{background:#fff;border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(74,42,18,.1);margin-bottom:20px}
+.box h2{margin:0 0 14px;font-size:1.1rem;color:var(--brown)}
+label{font-weight:600;font-size:14px}
+input,select{padding:10px 12px;border:1.5px solid #e3d6c6;border-radius:8px;font:inherit;width:100%;margin:4px 0 12px}
+button{background:var(--brown);color:#fff;border:0;border-radius:50px;padding:10px 24px;font-weight:600;cursor:pointer;font:inherit;font-weight:600}
+button.alt{background:#fff;color:var(--brown);border:2px solid var(--brown)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.st{background:var(--brown);color:#fff;border-radius:12px;padding:16px;text-align:center;font-size:14px}
+.st b{display:block;font-size:2rem;color:var(--gold)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px}
+.bar{display:grid;grid-template-columns:150px 1fr 36px;gap:10px;align-items:center;margin:7px 0;font-size:14px}
+.bar .l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .t{background:#f1e6d6;border-radius:6px;height:16px;overflow:hidden}
+.bar .f{height:100%;background:linear-gradient(90deg,var(--gold),var(--brown));border-radius:6px}
+.bar .n{font-weight:700;color:var(--brown);text-align:right}
+.tw{overflow:auto;max-height:520px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid #eee;text-align:left;white-space:nowrap}
+th{background:var(--cream);color:var(--brown);position:sticky;top:0}
+.e{color:#b3261e;font-weight:600}.m{color:var(--muted);font-size:13px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.tools input,.tools select{margin:0;width:auto;flex:1;min-width:160px}
+@media(max-width:700px){.row2{grid-template-columns:1fr}.bar{grid-template-columns:110px 1fr 30px}}
+</style></head>
+<body>
+<header><div><h1>Bookings Dashboard</h1><small>LV TOUR &amp; TRAVELS</small></div><span class="m" style="color:#d8cbbb" id="upd"></span></header>
+<div class="w">
+<div class="box" id="login">
+<h2>Connect to your bookings</h2>
+<div class="row2"><div><label>Google Script URL</label><input id="u" placeholder="https://script.google.com/macros/s/.../exec"></div>
+<div><label>Password (KEY in your script)</label><input id="k" type="password" autocomplete="off"></div></div>
+<button id="go">Load bookings</button> <span class="e" id="er"></span>
+<p class="m">The URL is remembered in this browser. The password is never saved. See SETUP.txt if you have not set this up yet.</p>
+</div>
+
+<div id="out" style="display:none">
+<div class="box"><div class="stats" id="stats"></div></div>
+<div class="cols">
+<div class="box"><h2>Bookings by package</h2><div id="c_pkg"></div></div>
+<div class="box"><h2>Bookings by day (last 14 days)</h2><div id="c_day"></div></div>
+<div class="box"><h2>Service requested</h2><div id="c_srv"></div></div>
+<div class="box"><h2>Pickup location</h2><div id="c_pick"></div></div>
+<div class="box"><h2>Travel month</h2><div id="c_mon"></div></div>
+<div class="box"><h2>Group size</h2><div id="c_grp"></div></div>
+</div>
+<div class="box"><h2>Upcoming trips</h2><div class="tw" style="max-height:260px"><table><thead><tr><th>Travel date</th><th>Name</th><th>Phone</th><th>Package</th><th>Travellers</th><th>Pickup</th></tr></thead><tbody id="up"></tbody></table></div></div>
+<div class="box"><h2>All customers</h2>
+<div class="tools"><input id="q" placeholder="Search name, phone, package..."><select id="fp"><option value="">All packages</option></select><button class="alt" id="csv">Download CSV</button></div>
+<div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div></div>
+</div></div>
+<script>
+const $=id=>document.getElementById(id);let head=[],rows=[];
+try{$('u').value=localStorage.getItem('lvU')||''}catch(e){}
+const col=n=>head.indexOf(n);
+function td(v){const t=document.createElement('td');t.textContent=v==null?'':String(v);return t}
+function chart(id,entries,max){const el=$(id);el.textContent='';if(!entries.length){el.textContent='No data yet';el.className='m';return}
+const top=max||Math.max(...entries.map(e=>e[1]));
+entries.forEach(([l,n])=>{const r=document.createElement('div');r.className='bar';
+const a=document.createElement('div');a.className='l';a.textContent=l||'-';a.title=l;
+const t=document.createElement('div');t.className='t';const f=document.createElement('div');f.className='f';f.style.width=(n/top*100)+'%';t.appendChild(f);
+const c=document.createElement('div');c.className='n';c.textContent=n;r.append(a,t,c);el.appendChild(r)})}
+const count=(i)=>{const m={};rows.forEach(r=>{const k=r[i];m[k]=(m[k]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function ymd(v){const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);return m?new Date(+m[1],+m[2]-1,+m[3]):null}
+function render(){
+const iT=col('Time'),iP=col('Package'),iN=col('Travellers'),iD=col('Travel date'),iS=col('Service'),iK=col('Pickup');
+let trav=0;rows.forEach(r=>trav+=+r[iN]||0);
+const today=new Date();today.setHours(0,0,0,0);
+const up=rows.filter(r=>{const d=ymd(r[iD]);return d&&d>=today}).sort((a,b)=>ymd(a[iD])-ymd(b[iD]));
+const week=Date.now()-7*864e5;
+const recent=rows.filter(r=>{const t=Date.parse(String(r[iT]).replace(/(\d{2}) (\w{3}) (\d{4})/,'$2 $1, $3'));return t>=week}).length;
+const pk=count(iP);
+$('stats').textContent='';
+[[rows.length,'Total bookings'],[recent,'Last 7 days'],[trav,'Total travellers'],[up.length,'Upcoming trips'],[pk[0]?pk[0][0]:'-','Most booked package']].forEach(([n,l])=>{const d=document.createElement('div');d.className='st';const b=document.createElement('b');b.textContent=n;b.style.fontSize=String(n).length>8?'1.1rem':'2rem';d.append(b,l);$('stats').appendChild(d)});
+chart('c_pkg',pk);chart('c_srv',count(iS));chart('c_pick',count(iK));
+// per day, last 14 days
+const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d)}
+const dm={};rows.forEach(r=>{const k=String(r[iT]).slice(0,11);dm[k]=(dm[k]||0)+1});
+chart('c_day',days.map(d=>{const k=String(d.getDate()).padStart(2,'0')+' '+MON[d.getMonth()]+' '+d.getFullYear();return [k.slice(0,6),dm[k]||0]}),Math.max(1,...Object.values(dm)));
+const mm={};rows.forEach(r=>{const d=ymd(r[iD]);if(d){const k=MON[d.getMonth()]+' '+d.getFullYear();mm[k]=(mm[k]||0)+1}});chart('c_mon',Object.entries(mm));
+const g={'1-2':0,'3-5':0,'6-10':0,'11+':0};rows.forEach(r=>{const n=+r[iN]||0;g[n<=2?'1-2':n<=5?'3-5':n<=10?'6-10':'11+']++});chart('c_grp',Object.entries(g));
+// upcoming
+$('up').textContent='';up.forEach(r=>{const tr=document.createElement('tr');[r[iD],r[col('Name')],r[col('Phone')],r[iP],r[iN],r[iK]].forEach(v=>tr.appendChild(td(v)));$('up').appendChild(tr)});
+// filter list
+const fp=$('fp');fp.length=1;pk.forEach(([p])=>{const o=document.createElement('option');o.value=p;o.textContent=p;fp.appendChild(o)});
+$('th').textContent='';const h=document.createElement('tr');head.forEach(x=>{const t=document.createElement('th');t.textContent=x;h.appendChild(t)});$('th').appendChild(h);
+list();$('upd').textContent='Updated '+new Date().toLocaleTimeString()}
+function view(){const q=$('q').value.toLowerCase(),p=$('fp').value,i=col('Package');return rows.filter(r=>(!p||r[i]===p)&&(!q||r.join(' ').toLowerCase().includes(q))).slice().reverse()}
+function list(){$('tb').textContent='';view().forEach(r=>{const tr=document.createElement('tr');r.forEach(v=>tr.appendChild(td(v)));$('tb').appendChild(tr)})}
+function csv(){const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+const t=[head,...view()].map(r=>r.map(esc).join(',')).join('\r\n');
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+t],{type:'text/csv'}));a.download='lv-bookings.csv';a.click()}
+$('go').onclick=async()=>{$('er').textContent='';const u=$('u').value.trim(),k=$('k').value;
+try{localStorage.setItem('lvU',u)}catch(e){}
+try{const r=await fetch(u+(u.includes('?')?'&':'?')+'key='+encodeURIComponent(k));const j=await r.json();
+if(j.error){$('er').textContent=j.error;return}
+head=j.rows[0]||[];rows=j.rows.slice(1);$('out').style.display='block';render()}
+catch(x){$('er').textContent='Could not load. Check the URL and that the script is deployed with access for "Anyone".'}};
+$('q').oninput=list;$('fp').onchange=list;$('csv').onclick=csv;
+</script></body></html>
