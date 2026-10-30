@@ -177,7 +177,7 @@ function track(n,p){try{if(GA_ID)gtag('event',n,p||{})}catch(e){}}
 #payBox .apps{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:10px 0 4px}
 #payBox .apps a{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border-radius:12px;font-weight:700;color:#fff;text-decoration:none;font-size:15px;transition:.2s}
 #payBox .apps a:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.18)}
-#payBox .apps .pp{background:#5f259f}#payBox .apps .gp{background:#1a73e8}#payBox .apps .pt{background:#00baf2;color:#06304a}#payBox .apps .ot{background:#6b3f1d}
+#payBox .apps .pp{background:#5f259f}#payBox .apps .gp{background:#1a73e8}#payBox .apps .ot{background:#6b3f1d}
 #payBox .small{font-size:12.5px;color:#7a6a5b;margin:4px 0 10px}
 </style>
 </head><body>
@@ -217,16 +217,15 @@ function track(n,p){try{if(GA_ID)gtag('event',n,p||{})}catch(e){}}
 <div class="apps">
 <a class="pp" id="payPP" href="#">PhonePe</a>
 <a class="gp" id="payGP" href="#">Google Pay</a>
-<a class="pt" id="payPT" href="#">Paytm</a>
 <a class="ot" id="payBtn" href="#">BHIM / Other UPI app</a>
 </div>
 <p class="small">Tap your app on your phone. If it does not open, use "Other UPI app", scan the QR code, or copy the UPI ID and pay from any app.</p>
 <button type="button" class="btn sel" id="copyUpi">Copy UPI ID</button></div>
 </div>
-<ol class="steps" style="margin-top:16px"><li>Tap <b>PhonePe, Google Pay or Paytm</b> on your phone, or scan the QR code with any UPI app.</li><li>Check the amount and complete the payment.</li><li>Send us the screenshot or UTR number on WhatsApp so we can confirm your booking.</li></ol>
+<ol class="steps" style="margin-top:16px"><li>Tap <b>PhonePe or Google Pay</b> on your phone, or scan the QR code with any UPI app.</li><li>Check the amount and complete the payment.</li><li>Send us the screenshot or UTR number on WhatsApp so we can confirm your booking.</li></ol>
 <a class="btn gold" id="proofBtn" href="#" target="_blank" style="margin-top:8px">I have paid: send proof on WhatsApp</a>
 </div>
-<div id="qrWrap"><div id="qr"></div><p class="note" id="qrNote">Scan with PhonePe, Google Pay, Paytm or any UPI app</p></div>
+<div id="qrWrap"><div id="qr"></div><p class="note" id="qrNote">Scan with PhonePe, Google Pay or any UPI app</p></div>
 </div>
 <p class="note">Your booking is confirmed only after our team verifies the payment and contacts you. Advance and cancellation terms are shared by our team when we confirm.</p>
 </div></div>
@@ -353,7 +352,6 @@ function paint(){const l=link();document.getElementById('payBtn').href=l.url;
 const q=l.url.slice(l.url.indexOf('?'));
 document.getElementById('payPP').href='phonepe://pay'+q;
 document.getElementById('payGP').href=(/iPhone|iPad|iPod/i.test(navigator.userAgent)?'gpay://upi/pay':'tez://upi/pay')+q;
-document.getElementById('payPT').href='paytmmp://pay'+q;
 document.querySelectorAll('#payBox .apps a').forEach(a=>{if(!a.dataset.b){a.dataset.b=1;a.addEventListener('click',()=>{try{track('upi_app_click',{app:a.textContent.trim()})}catch(x){}})}});
 const who=(name&&name.value.trim())||'a customer';const p=PACKAGES.find(x=>x.id==pkg.value);
 document.getElementById('proofBtn').href='https://wa.me/'+"918073080995"+'?text='+encodeURIComponent('Hi LV Tour & Travels, I have paid an advance of '+fmtINR(+amt.value||0)+' by UPI for '+(p?p.name:'a custom trip')+'. Name: '+who+'. UTR / screenshot: ');
