@@ -183,6 +183,11 @@ function track(n,p){try{if(GA_ID)gtag('event',n,p||{})}catch(e){}}
 #payBox .steps li{margin:6px 0 6px 18px}
 #payBox .note{font-size:13px;color:#7a6a5b;margin-top:14px}
 @media(max-width:700px){#payBox .grid2{grid-template-columns:1fr}}
+#payBox .apps{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:10px 0 4px}
+#payBox .apps a{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border-radius:12px;font-weight:700;color:#fff;text-decoration:none;font-size:15px;transition:.2s}
+#payBox .apps a:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.18)}
+#payBox .apps .pp{background:#5f259f}#payBox .apps .gp{background:#1a73e8}#payBox .apps .pt{background:#00baf2;color:#06304a}#payBox .apps .ot{background:#6b3f1d}
+#payBox .small{font-size:12.5px;color:#7a6a5b;margin:4px 0 10px}
 </style>
 </head><body>
 <div class="topbar">&#9742; Free trip quote: call <a href="tel:8073080995">8073080995</a> or <a href="https://wa.me/918073080995" target="_blank">WhatsApp us</a> &nbsp;|&nbsp; Pickup from Bangalore &amp; Mysore</div>
@@ -217,10 +222,17 @@ function track(n,p){try{if(GA_ID)gtag('event',n,p||{})}catch(e){}}
 <div class="amt" id="payQuick"></div>
 <div class="upi">UPI ID: <span id="upiId"></span></div>
 <div class="acts" style="display:flex;gap:10px;flex-wrap:wrap">
-<a class="btn" id="payBtn" href="#">Pay with UPI app</a>
-<button type="button" class="btn sel" id="copyUpi">Copy UPI ID</button>
+<div style="width:100%"><label style="margin-top:4px">Choose your payment app</label>
+<div class="apps">
+<a class="pp" id="payPP" href="#">PhonePe</a>
+<a class="gp" id="payGP" href="#">Google Pay</a>
+<a class="pt" id="payPT" href="#">Paytm</a>
+<a class="ot" id="payBtn" href="#">BHIM / Other UPI app</a>
 </div>
-<ol class="steps" style="margin-top:16px"><li>Tap <b>Pay with UPI app</b> on your phone, or scan the QR code with any UPI app.</li><li>Check the amount and complete the payment.</li><li>Send us the screenshot or UTR number on WhatsApp so we can confirm your booking.</li></ol>
+<p class="small">Tap your app on your phone. If it does not open, use "Other UPI app", scan the QR code, or copy the UPI ID and pay from any app.</p>
+<button type="button" class="btn sel" id="copyUpi">Copy UPI ID</button></div>
+</div>
+<ol class="steps" style="margin-top:16px"><li>Tap <b>PhonePe, Google Pay or Paytm</b> on your phone, or scan the QR code with any UPI app.</li><li>Check the amount and complete the payment.</li><li>Send us the screenshot or UTR number on WhatsApp so we can confirm your booking.</li></ol>
 <a class="btn gold" id="proofBtn" href="#" target="_blank" style="margin-top:8px">I have paid: send proof on WhatsApp</a>
 </div>
 <div id="qrWrap"><div id="qr"></div><p class="note" id="qrNote">Scan with PhonePe, Google Pay, Paytm or any UPI app</p></div>
@@ -347,6 +359,11 @@ function link(){const p=PACKAGES.find(x=>x.id==pkg.value);const note='LV Booking
 return {note,url:'upi://pay?pa='+encodeURIComponent(UPI_ID)+'&pn='+encodeURIComponent(UPI_NAME)+'&am='+encodeURIComponent(+amt.value||0)+'&cu=INR&tn='+encodeURIComponent(note)}}
 let qr=null;
 function paint(){const l=link();document.getElementById('payBtn').href=l.url;
+const q=l.url.slice(l.url.indexOf('?'));
+document.getElementById('payPP').href='phonepe://pay'+q;
+document.getElementById('payGP').href=(/iPhone|iPad|iPod/i.test(navigator.userAgent)?'gpay://upi/pay':'tez://upi/pay')+q;
+document.getElementById('payPT').href='paytmmp://pay'+q;
+document.querySelectorAll('#payBox .apps a').forEach(a=>{if(!a.dataset.b){a.dataset.b=1;a.addEventListener('click',()=>{try{track('upi_app_click',{app:a.textContent.trim()})}catch(x){}})}});
 const who=(name&&name.value.trim())||'a customer';const p=PACKAGES.find(x=>x.id==pkg.value);
 document.getElementById('proofBtn').href='https://wa.me/'+"918073080995"+'?text='+encodeURIComponent('Hi LV Tour & Travels, I have paid an advance of '+fmtINR(+amt.value||0)+' by UPI for '+(p?p.name:'a custom trip')+'. Name: '+who+'. UTR / screenshot: ');
 const box=document.getElementById('qr');
